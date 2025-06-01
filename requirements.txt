@@ -1,0 +1,42 @@
+# Consolidated Payment Plan Analysis System - Simplified Requirements
+# Version 3.0 - Streamlined Dependencies
+
+# Core Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Template Engine
+jinja2==3.1.2
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.0
+
+# Excel/CSV Processing
+openpyxl==3.1.2
+
+# Date/Time Handling
+python-dateutil==2.8.2
+
+# File Handling
+aiofiles==23.2.1
+
+# Data Validation
+pydantic==2.5.0
+
+# Type Hints Support
+typing-extensions==4.8.0
+
+# Utilities
+pathlib2==2.3.7
+
+# Development Tools (Optional)
+pytest==7.4.3
+black==23.11.0
+
+# Rich Console Output (for CLI)
+rich==13.7.0
+
+# Progress Bars
+tqdm==4.66.1
