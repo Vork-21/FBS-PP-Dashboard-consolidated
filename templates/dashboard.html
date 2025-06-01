@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if title %}{{ title }}{% else %}Payment Plan Analysis System{% endif %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Consolidated Custom CSS -->
+    <link href="{{ url_for('static', path='css/consolidated.css') }}" rel="stylesheet">
+</head>
+<body data-has-results="{{ has_results }}">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-chart-line me-2"></i>
+                Payment Plan Analysis
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/" data-view="dashboard">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    {% if has_results %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/quality" data-view="quality">
+                            <i class="fas fa-search me-1"></i>Data Quality
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/customers" data-view="customers">
+                            <i class="fas fa-users me-1"></i>Customers
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/projections" data-view="projections">
+                            <i class="fas fa-chart-line me-1"></i>Projections
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/collections" data-view="collections">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Collections
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/reports" data-view="reports">
+                            <i class="fas fa-download me-1"></i>Reports
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                {% if has_results %}
+                <div class="navbar-nav">
+                    <button class="btn btn-outline-light btn-sm" onclick="clearResults()">
+                        <i class="fas fa-trash me-1"></i>Clear Results
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% if not has_results %}
+        <!-- File Upload Section -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1><i class="fas fa-upload me-3"></i>Upload Payment Plan Data</h1>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="fas fa-cloud-upload-alt me-2"></i>CSV File Upload</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                            <h5>Click to upload or drag and drop your CSV file here</h5>
+                            <p class="text-muted">Only CSV files are supported. Analysis will begin immediately.</p>
+                            <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                        </div>
+                        
+                        <div class="progress-container mt-3" style="display: none;">
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%"></div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted" id="progressMessage">Processing file...</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Help Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>File Requirements & Features</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-file-csv me-2 text-primary"></i>CSV Requirements</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Customer names in columns 1 or 2</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Type = "Invoice" for invoice rows</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>FOB field with payment terms</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Open Balance > 0 for tracking</li>
+                                    <li><i class="fas fa-check-circle text-success me-2"></i>Class field for categorization</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-magic me-2 text-primary"></i>System Features</h6>
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-search text-warning me-2"></i>Comprehensive data quality analysis</li>
+                                    <li><i class="fas fa-calculator text-info me-2"></i>Payment compliance tracking</li>
+                                    <li><i class="fas fa-chart-line text-success me-2"></i>Future payment projections</li>
+                                    <li><i class="fas fa-exclamation-triangle text-danger me-2"></i>Collection priority lists</li>
+                                    <li><i class="fas fa-file-excel text-primary me-2"></i>Multi-format exports</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Results Dashboard -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard</h1>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary" onclick="app.loadCurrentView()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+                <button class="btn btn-success" data-export="excel">
+                    <i class="fas fa-download me-2"></i>Export Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary Metrics -->
+        <div class="row mb-4" id="summaryMetricsRow">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card bg-primary">
+                    <div class="metric-value" id="totalCustomers">0</div>
+                    <div class="metric-label">Total Customers</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card bg-success">
+                    <div class="metric-value" id="dataQualityScore">0%</div>
+                    <div class="metric-label">Data Quality Score</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card bg-info">
+                    <div class="metric-value" id="totalOutstanding">$0</div>
+                    <div class="metric-label">Total Outstanding</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="metric-card bg-warning">
+                    <div class="metric-value" id="customersBehind">0</div>
+                    <div class="metric-label">Customers Behind</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="search-filter-container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-3"><i class="fas fa-filter me-2"></i>Filters</h6>
+                            <div class="d-flex flex-wrap gap-2" id="classFilters">
+                                <button class="filter-btn active" data-filter="class" data-value="">All Classes</button>
+                                <!-- Class filters will be populated here -->
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="search-input-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="form-control search-input" id="globalSearch" placeholder="Search customers, plans, or data...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row mb-4">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Payment Status Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Class Breakdown</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="classChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Data Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Payment Plan Details</h5>
+                            <span class="text-muted" id="tableInfo">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Customer</th>
+                                        <th>Plan ID</th>
+                                        <th>Monthly Payment</th>
+                                        <th>Frequency</th>
+                                        <th>Balance</th>
+                                        <th>% Paid</th>
+                                        <th>Months Behind</th>
+                                        <th>Status</th>
+                                        <th>Class</th>
+                                        <th>Completion</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customerTableBody">
+                                    <!-- Data will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <nav id="pagination" class="mt-3">
+                            <!-- Pagination will be generated here -->
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <a href="/quality" class="btn btn-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                    <i class="fas fa-search-plus fa-2x mb-2"></i>
+                                    <div class="fw-bold">Data Quality</div>
+                                    <small>View error analysis</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/customers" class="btn btn-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                    <i class="fas fa-users fa-2x mb-2"></i>
+                                    <div class="fw-bold">Customer Details</div>
+                                    <small>Payment tracking</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/projections" class="btn btn-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                    <div class="fw-bold">Projections</div>
+                                    <small>Future payments</small>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="/collections" class="btn btn-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                    <div class="fw-bold">Collections</div>
+                                    <small>Priority list</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-message">Loading...</div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 1080;"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-chart-line me-2"></i>Payment Plan Analysis System v3.0</h5>
+                    <p class="mb-0">Streamlined payment tracking with consolidated architecture and enhanced performance.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="mb-0">
+                        <small>Built with FastAPI, Bootstrap & Chart.js</small>
+                    </p>
+                    <p class="mb-0">
+                        <small>&copy; 2025 Advanced Payment Analytics</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Unified Application JavaScript -->
+    <script src="{{ url_for('static', path='js/unified-app.js') }}"></script>
+    
+    <script>
+        // Page-specific initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current view
+            app.currentView = 'dashboard';
+            
+            // Load class filters
+            if (app.hasResults()) {
+                loadClassFilters();
+                app.loadCurrentView();
+            }
+            
+            setupSearch();
+        });
+
+        async function loadClassFilters() {
+            try {
+                const response = await fetch('/api/classes');
+                const data = await response.json();
+                
+                const container = document.getElementById('classFilters');
+                const allButton = container.querySelector('.filter-btn');
+                
+                data.classes.forEach(className => {
+                    const button = document.createElement('button');
+                    button.className = 'filter-btn';
+                    button.dataset.filter = 'class';
+                    button.dataset.value = className;
+                    button.textContent = className;
+                    container.appendChild(button);
+                });
+                
+            } catch (error) {
+                console.error('Error loading class filters:', error);
+            }
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('globalSearch');
+            let searchTimeout;
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        app.filters.customer = this.value;
+                        app.loadCurrentView();
+                    }, 500);
+                });
+            }
+        }
+
+        // Enhanced table rendering for dashboard
+        function renderDashboardTable(plans) {
+            const tbody = document.getElementById('customerTableBody');
+            if (!tbody) return;
+
+            // Apply search filter
+            let filteredPlans = plans;
+            if (app.filters.customer) {
+                const searchTerm = app.filters.customer.toLowerCase();
+                filteredPlans = plans.filter(plan => 
+                    plan.customer_name.toLowerCase().includes(searchTerm) ||
+                    plan.plan_id.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Update table info
+            const tableInfo = document.getElementById('tableInfo');
+            if (tableInfo) {
+                tableInfo.textContent = `Showing ${filteredPlans.length} of ${plans.length} payment plans`;
+            }
+
+            tbody.innerHTML = filteredPlans.slice(0, 50).map(plan => `
+                <tr class="${(plan.months_behind || 0) > 0 ? 'table-warning' : ''}">
+                    <td>
+                        <strong>${plan.customer_name}</strong>
+                        ${(plan.months_behind || 0) > 2 ? '<br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Needs attention</small>' : ''}
+                    </td>
+                    <td><small class="text-muted">${plan.plan_id}</small></td>
+                    <td><strong class="text-success">${app.formatCurrency(plan.monthly_payment || 0)}</strong></td>
+                    <td><span class="badge bg-info">${plan.frequency || 'monthly'}</span></td>
+                    <td><strong>${app.formatCurrency(plan.total_owed || 0)}</strong></td>
+                    <td>
+                        <div class="progress" style="height: 12px;">
+                            <div class="progress-bar bg-success" style="width: ${Math.min(plan.percent_paid || 0, 100)}%"></div>
+                        </div>
+                        <small class="text-muted">${(plan.percent_paid || 0).toFixed(1)}%</small>
+                    </td>
+                    <td>
+                        <span class="${(plan.months_behind || 0) > 0 ? 'text-danger fw-bold' : 'text-muted'}">
+                            ${plan.months_behind || 0}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${plan.status || 'unknown'}">
+                            ${(plan.status || 'unknown').charAt(0).toUpperCase() + (plan.status || 'unknown').slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        ${plan.class_field ? `<span class="badge bg-secondary">${plan.class_field}</span>` : '<span class="text-muted">-</span>'}
+                    </td>
+                    <td>
+                        ${plan.projected_completion ? 
+                            `<small class="text-muted">${new Date(plan.projected_completion).toLocaleDateString()}</small>` : 
+                            '<span class="text-muted">-</span>'
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Override the default table renderer for dashboard
+        if (window.app) {
+            window.app.updateCustomerTable = renderDashboardTable;
+        }
+    </script>
+</body>
+</html>
