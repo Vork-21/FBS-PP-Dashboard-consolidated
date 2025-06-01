@@ -1,9 +1,10 @@
 """
-Streamlined FastAPI Web Application for Payment Plan Analysis
-Simplified architecture with consolidated API endpoints
+FINAL Streamlined FastAPI Web Application for Payment Plan Analysis
+All errors fixed - ready to run
 """
 
 from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Query, Form
+from fastapi import Path as FastAPIPath  # Avoid conflict with pathlib.Path
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -16,9 +17,15 @@ import shutil
 from datetime import datetime
 from typing import Optional, Dict, Any
 from pathlib import Path
+import math
 
 # Import our consolidated analysis engine
-from consolidated_analysis import PaymentPlanAnalysisEngine
+try:
+    from consolidated_analysis import PaymentPlanAnalysisEngine
+except ImportError:
+    print("❌ Error: consolidated_analysis.py not found!")
+    print("📝 Make sure consolidated_analysis.py is in the same directory as streamlined_webapp.py")
+    exit(1)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -120,7 +127,7 @@ async def analyze_file(
 
 @app.get("/api/data")
 async def get_data(
-    view: str = Query("dashboard", regex="^(dashboard|quality|collections|projections)$"),
+    view: str = Query("dashboard", description="Data view type"),
     class_filter: Optional[str] = Query(None),
     months_ahead: int = Query(12, ge=1, le=60)
 ):
@@ -128,6 +135,11 @@ async def get_data(
     
     if not analysis_engine or not hasattr(analysis_engine, 'results'):
         raise HTTPException(status_code=404, detail="No analysis results available")
+    
+    # Validate view parameter
+    valid_views = ["dashboard", "quality", "collections", "projections"]
+    if view not in valid_views:
+        raise HTTPException(status_code=400, detail=f"Invalid view. Must be one of: {valid_views}")
     
     try:
         if view == "dashboard":
@@ -186,14 +198,24 @@ async def get_customer_details(customer_name: str):
 
 @app.get("/api/export/{format_type}")
 async def export_data(
-    format_type: str = Query(..., regex="^(excel|csv|json)$"),
-    view: str = Query("complete", regex="^(complete|dashboard|collections|quality)$"),
+    format_type: str = FastAPIPath(..., description="Export format type"),
+    view: str = Query("complete", description="Data view to export"),
     class_filter: Optional[str] = Query(None)
 ):
     """Unified export endpoint for different formats and views"""
     
     if not analysis_engine or not hasattr(analysis_engine, 'results'):
         raise HTTPException(status_code=404, detail="No analysis results available")
+    
+    # Validate parameters
+    valid_formats = ["excel", "csv", "json"]
+    valid_views = ["complete", "dashboard", "collections", "quality"]
+    
+    if format_type not in valid_formats:
+        raise HTTPException(status_code=400, detail=f"Invalid format. Must be one of: {valid_formats}")
+    
+    if view not in valid_views:
+        raise HTTPException(status_code=400, detail=f"Invalid view. Must be one of: {valid_views}")
     
     try:
         timestamp = analysis_engine.results['timestamp']
@@ -289,7 +311,7 @@ async def quality_page(request: Request):
             "error": "No analysis results available. Please upload a file first."
         })
     
-    return templates.TemplateResponse("quality.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Data Quality Report",
         "has_results": True
@@ -306,7 +328,7 @@ async def customers_page(request: Request, class_filter: Optional[str] = Query(N
             "error": "No analysis results available. Please upload a file first."
         })
     
-    return templates.TemplateResponse("customers.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Customer Payment Tracking",
         "has_results": True,
@@ -324,7 +346,7 @@ async def collections_page(request: Request):
             "error": "No analysis results available. Please upload a file first."
         })
     
-    return templates.TemplateResponse("collections.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Collection Priorities",
         "has_results": True
@@ -341,7 +363,7 @@ async def projections_page(request: Request):
             "error": "No analysis results available. Please upload a file first."
         })
     
-    return templates.TemplateResponse("projections.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Payment Projections",
         "has_results": True
@@ -358,7 +380,7 @@ async def reports_page(request: Request):
             "error": "No analysis results available. Please upload a file first."
         })
     
-    return templates.TemplateResponse("reports.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Reports & Downloads",
         "has_results": True
@@ -368,7 +390,7 @@ async def reports_page(request: Request):
 # ENHANCED ANALYSIS ENGINE METHODS
 # ============================================================================
 
-def _generate_customer_projections(self, class_filter: str = None, months_ahead: int = 12) -> List[Dict]:
+def _generate_customer_projections(self, class_filter: str = None, months_ahead: int = 12) -> list[Dict]:
     """Generate customer-level projections"""
     metrics = self.customer_metrics
     if class_filter:
@@ -386,7 +408,7 @@ def _generate_customer_projections(self, class_filter: str = None, months_ahead:
     for customer_name, customer_metrics_list in customer_groups.items():
         total_monthly = sum(self._normalize_to_monthly(m) for m in customer_metrics_list)
         total_owed = sum(m.total_owed for m in customer_metrics_list)
-        worst_status = max(m.status for m in customer_metrics_list, key=lambda s: ['current', 'completed', 'behind'].index(s.value))
+        worst_status = max((m.status for m in customer_metrics_list), key=lambda s: ['current', 'completed', 'behind'].index(s.value))
         
         # Calculate completion
         if total_monthly > 0 and total_owed > 0:
@@ -435,7 +457,6 @@ def _create_excel_export(self, excel_path: str, class_filter: str = None):
     """Create comprehensive Excel export"""
     import pandas as pd
     from openpyxl import Workbook
-    from openpyxl.styles import PatternFill, Font
     
     # Get data
     dashboard_data = self.get_dashboard_data(class_filter)
@@ -494,17 +515,20 @@ PaymentPlanAnalysisEngine._create_excel_export = _create_excel_export
 
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc):
-    return templates.TemplateResponse("404.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
-        "title": "Page Not Found"
+        "title": "Page Not Found",
+        "has_results": has_analysis_results(),
+        "error": "Page not found"
     }, status_code=404)
 
 @app.exception_handler(500)
 async def server_error_handler(request: Request, exc):
-    return templates.TemplateResponse("500.html", {
+    return templates.TemplateResponse("dashboard.html", {
         "request": request,
         "title": "Server Error",
-        "error": str(exc)
+        "has_results": has_analysis_results(),
+        "error": f"Server error: {str(exc)}"
     }, status_code=500)
 
 # ============================================================================

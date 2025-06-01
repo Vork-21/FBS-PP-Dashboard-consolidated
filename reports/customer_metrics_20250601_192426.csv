@@ -1,0 +1,118 @@
+Customer,Plan_ID,Monthly_Payment,Frequency,Total_Owed,Percent_Paid,Months_Behind,Status,Class
+Muboraksho BEKHRUZI,Muboraksho BEKHRUZI_plan_0,1000.0,quarterly,5550.0,15.3,0,current,KL
+Gabriela MAURAD GORDILLO,Gabriela MAURAD GORDILLO_plan_1,500.0,monthly,5900.0,23.5,2,behind,BR
+Viani Maite DE LEON GARCIA,Viani Maite DE LEON GARCIA_plan_2,300.0,monthly,5749.0,4.2,2,behind,KL
+Mireya GODOY MEDINA,Mireya GODOY MEDINA_plan_3,700.0,monthly,5175.0,27.9,0,current,TSA
+Catherine OSME,Catherine OSME_plan_4,350.0,monthly,5500.0,0.0,4,behind,KL
+Onel Clarens Jean Pierre,Onel Clarens Jean Pierre_plan_5,200.0,monthly,944.0,17.9,4,behind,NMR
+Fariza Rakhimova (Akobir Azizov),Fariza Rakhimova (Akobir Azizov)_plan_7,250.0,monthly,6450.0,0.0,3,behind,KL
+Claudia ESPINOSA DE RODRIGUEZ,Claudia ESPINOSA DE RODRIGUEZ_plan_8,300.0,monthly,8750.0,9.3,0,current,BR
+Hassan Mohamed and Salah Mamoud,Hassan Mohamed and Salah Mamoud_plan_9,500.0,monthly,8800.0,20.0,0,current,NMR
+Pranav Reddy Koppula,Pranav Reddy Koppula_plan_10,500.0,monthly,2300.0,52.1,0,current,BR
+Azam RASULOV,Azam RASULOV_plan_11,300.0,monthly,4600.0,17.9,1,behind,KL
+Sashell PANTRY,Sashell PANTRY_plan_12,300.0,monthly,1900.0,24.0,1,behind,KL
+Wilmane LOUIS,Wilmane LOUIS_plan_13,250.0,monthly,4000.0,33.3,0,current,KL
+NFN KASHIF,NFN KASHIF_plan_14,500.0,monthly,4500.0,0.0,4,behind,BR
+Jair Andres QUIROZ MONTOYA,Jair Andres QUIROZ MONTOYA_plan_15,200.0,monthly,375.0,68.1,0,current,TSA
+Ismoilbek Sodiqov,Ismoilbek Sodiqov_plan_16,300.0,monthly,5800.0,13.4,2,behind,AN
+Randy VALENZUELA CIFUENTES,Randy VALENZUELA CIFUENTES_plan_17,300.0,monthly,6000.0,0.0,2,behind,KL
+Sophonnary Som,Sophonnary Som_plan_18,500.0,monthly,2000.0,50.0,0,current,AN
+Aldair RENE,Aldair RENE_plan_19,500.0,monthly,2175.0,47.9,0,current,AN
+Shanika Dilukshi KURUPPU ARACHCIGE,Shanika Dilukshi KURUPPU ARACHCIGE_plan_20,400.0,monthly,1675.0,0.0,0,current,TSA
+Veronica Maldonado,Veronica Maldonado_plan_21,250.0,monthly,6850.0,8.7,1,behind,KL
+Samira USMONOVA,Samira USMONOVA_plan_22,250.0,monthly,250.0,86.1,0,current,KL
+Dianela Josefina MORONTA NUNEZ,Dianela Josefina MORONTA NUNEZ_plan_23,1000.0,monthly,1000.0,66.7,0,current,TSA
+Behruz SHOEV,Behruz SHOEV_plan_24,250.0,monthly,6550.0,0.8,5,behind,KL
+Jennifer Ishaya,Jennifer Ishaya_plan_26,400.0,monthly,5800.0,0.0,1,behind,BR
+Adama Doumbouya,Adama Doumbouya_plan_27,500.0,monthly,5175.0,28.9,0,current,AN
+Kiyomiddin RASULOV,Kiyomiddin RASULOV_plan_28,200.0,monthly,5600.0,0.0,6,behind,KL
+Dzhovidon RAKHIMOV,Dzhovidon RAKHIMOV_plan_29,200.0,monthly,5900.0,9.2,1,behind,KL
+Saira Herisget ZAPATA CAMPOS,Saira Herisget ZAPATA CAMPOS_plan_30,200.0,monthly,1000.0,50.0,5,behind,NMR
+Saira Herisget ZAPATA CAMPOS,Saira Herisget ZAPATA CAMPOS_plan_31,300.0,monthly,6175.0,0.0,5,behind,TSA
+Akbar SHARIFOV,Akbar SHARIFOV_plan_32,1000.0,monthly,650.0,60.6,1,behind,NMR
+Rizwan SYED,Rizwan SYED_plan_33,500.0,monthly,1200.0,62.5,0,current,BR
+Claire KAGWIRIA,Claire KAGWIRIA_plan_34,500.0,monthly,2950.0,1.7,2,behind,BR
+Andrea MONTAQUE,Andrea MONTAQUE_plan_35,200.0,monthly,2050.0,29.3,0,current,KL
+Chrisna Aujour,Chrisna Aujour_plan_36,200.0,monthly,2750.0,22.5,0,current,KL
+Emerson A GARCIA CABRERA,Emerson A GARCIA CABRERA_plan_37,350.0,monthly,6700.0,0.0,1,behind,KL
+Moussa THIAM,Moussa THIAM_plan_38,400.0,bimonthly,4800.0,14.3,0,current,TSA
+Hamidou NDIAYE,Hamidou NDIAYE_plan_39,400.0,bimonthly,3800.0,9.5,2,behind,AN
+Tonie Harper,Tonie Harper_plan_40,250.0,monthly,750.0,40.7,2,behind,BR
+Jose PEREZ VEGA,Jose PEREZ VEGA_plan_42,500.0,monthly,2000.0,42.9,2,behind,BR
+Leydi Liliana SILVA BERMON,Leydi Liliana SILVA BERMON_plan_43,300.0,monthly,3800.0,24.0,0,current,BR
+Olim SHODIEV (Aziza KODIROVA),Olim SHODIEV (Aziza KODIROVA)_plan_44,200.0,monthly,7600.0,10.6,0,current,KL
+Jeinmy Maritza HERAS CAMPOVERDE,Jeinmy Maritza HERAS CAMPOVERDE_plan_46,500.0,monthly,300.0,62.5,0,current,BR
+Amirjon FAYZULLOEV,Amirjon FAYZULLOEV_plan_47,200.0,monthly,4750.0,4.0,2,behind,KL
+Djonibek Mirzomurodovich KHOLOV,Djonibek Mirzomurodovich KHOLOV_plan_48,200.0,monthly,5800.0,7.9,1,behind,KL
+Ulmas Hasanov,Ulmas Hasanov_plan_49,200.0,monthly,5150.0,8.0,4,behind,KL
+Clara Basantes-Basantes,Clara Basantes-Basantes_plan_50,200.0,monthly,4840.0,4.0,0,current,NMR
+Bouraima Coulibaly,Bouraima Coulibaly_plan_52,500.0,monthly,1500.0,57.1,0,current,TSA
+Anvar SIDDIKOV,Anvar SIDDIKOV_plan_53,250.0,monthly,1900.0,36.3,1,behind,KL
+Luis Francisco YAMBAY CUJILEMA,Luis Francisco YAMBAY CUJILEMA_plan_54,100.0,monthly,2199.0,15.8,0,current,TSA
+Ramona HERNANDEZ ACOSTA,Ramona HERNANDEZ ACOSTA_plan_55,200.0,monthly,2525.0,44.2,0,current,NMR
+Jimer Antonio ROZO CHAGUALA,Jimer Antonio ROZO CHAGUALA_plan_57,300.0,monthly,3850.0,0.0,9,behind,BR
+Byron Vinicio TORRES RODRIGUEZ,Byron Vinicio TORRES RODRIGUEZ_plan_58,200.0,monthly,3800.0,9.5,7,behind,BR
+Janel RENE,Janel RENE_plan_59,150.0,monthly,2008.0,23.0,2,behind,AN
+Hans VALENZUELA CIFUENTES,Hans VALENZUELA CIFUENTES_plan_60,300.0,monthly,3450.0,37.8,2,behind,KL
+Yelson ALVAREZ FUNEZ,Yelson ALVAREZ FUNEZ_plan_61,400.0,monthly,4850.0,4.0,8,behind,NMR
+Orlando GONZALEZ MOLINA,Orlando GONZALEZ MOLINA_plan_62,300.0,monthly,1200.0,0.0,3,behind,BR
+Brian Gonzalez Cortes,Brian Gonzalez Cortes_plan_63,200.0,monthly,2700.0,0.0,3,behind,BR
+Wadson DESTINE,Wadson DESTINE_plan_64,200.0,monthly,3500.0,20.5,0,current,BR
+Musu TARAWALLIE,Musu TARAWALLIE_plan_65,400.0,monthly,3025.0,20.9,1,behind,BR
+Angelica dos Santos Ramos,Angelica dos Santos Ramos_plan_66,250.0,monthly,1991.25,33.4,1,behind,KL
+Firuz Olimovich DANIEROV,Firuz Olimovich DANIEROV_plan_67,300.0,monthly,1150.0,64.6,2,behind,KL
+Hugo PASTUNA TIPAN,Hugo PASTUNA TIPAN_plan_68,200.0,monthly,3475.0,5.4,8,behind,NMR
+Alhaji JALLOH,Alhaji JALLOH_plan_69,100.0,monthly,3075.0,6.1,8,behind,BR
+James PIERRE LOUIS,James PIERRE LOUIS_plan_71,300.0,monthly,500.0,68.8,2,behind,KL
+Luis QUINATOA-INAMO,Luis QUINATOA-INAMO_plan_72,100.0,monthly,1500.0,6.2,3,behind,TSA
+Amos DATUS,Amos DATUS_plan_73,200.0,monthly,6250.0,0.0,4,behind,KL
+Aristyl ODVARD,Aristyl ODVARD_plan_74,500.0,monthly,4500.0,0.0,9,behind,NMR
+Irma Cecilia MURCIA LEGUIZAMON,Irma Cecilia MURCIA LEGUIZAMON_plan_75,400.0,monthly,1200.0,20.0,3,behind,BR
+Geraldo Adonis,Geraldo Adonis_plan_76,200.0,monthly,950.0,45.7,0,current,KL
+Eric Pervist,Eric Pervist_plan_77,500.0,monthly,2925.0,7.9,6,behind,KL
+Craig Matthew Smith,Craig Matthew Smith_plan_78,300.0,monthly,3575.0,0.0,4,behind,TSA
+Kenneth CASTILLO MONTIEL,Kenneth CASTILLO MONTIEL_plan_79,100.0,monthly,4700.0,0.0,4,behind,NMR
+Oniki Blamo,Oniki Blamo_plan_80,100.0,monthly,3365.0,8.4,1,behind,KL
+Alhassan KARGBO,Alhassan KARGBO_plan_81,300.0,monthly,3475.0,7.9,9,behind,KL
+Umar Farouk Atakora,Umar Farouk Atakora_plan_82,100.0,monthly,3075.0,11.5,0,current,KL
+Jonathan CALIXTE,Jonathan CALIXTE_plan_83,100.0,monthly,2175.0,8.4,1,behind,KL
+Julith Paola POCHES PUENTES,Julith Paola POCHES PUENTES_plan_84,200.0,monthly,2000.0,9.1,10,behind,BR
+Haydee Maria ORTEGA PADILLA,Haydee Maria ORTEGA PADILLA_plan_85,100.0,monthly,2600.0,3.7,3,behind,NMR
+Yanny Nataly TOLEDO VELA,Yanny Nataly TOLEDO VELA_plan_86,200.0,monthly,300.0,66.7,1,behind,BR
+Kevin GARCIA GAMEZ,Kevin GARCIA GAMEZ_plan_87,200.0,monthly,1500.0,0.0,6,behind,BR
+Narender KUMAR,Narender KUMAR_plan_88,500.0,monthly,3650.0,12.0,7,behind,NMR
+Roseline Njaulem CHAPNJI,Roseline Njaulem CHAPNJI_plan_89,200.0,monthly,750.0,61.5,0,current,KL
+Nnoko Desta Ekoti NGITE,Nnoko Desta Ekoti NGITE_plan_90,150.0,monthly,3100.0,1.6,8,behind,KL
+Anthony ACKAH,Anthony ACKAH_plan_91,500.0,monthly,2500.0,0.0,4,behind,NMR
+Altagracia RODRIGUEZ ESPINAL,Altagracia RODRIGUEZ ESPINAL_plan_92,500.0,monthly,950.0,67.8,0,current,TSA
+Edilson BORGES,Edilson BORGES_plan_93,300.0,monthly,5150.0,15.5,2,behind,TSA
+Luis David Sanchez-Pinzon,Luis David Sanchez-Pinzon_plan_94,300.0,monthly,1700.0,51.4,0,current,BR
+Fnu HASBI,Fnu HASBI_plan_95,500.0,monthly,1000.0,50.0,2,behind,BR
+Abdellahi Coulibay,Abdellahi Coulibay_plan_96,300.0,monthly,2100.0,12.5,7,behind,TSA
+Harpreet SINGH I-589,Harpreet SINGH I-589_plan_97,100.0,monthly,3500.0,46.2,0,current,TSA
+Mukul KHANNA,Mukul KHANNA_plan_98,500.0,monthly,1545.0,64.0,4,behind,BR
+Jose Antonio URBINA CORTEZ,Jose Antonio URBINA CORTEZ_plan_99,300.0,monthly,2075.0,41.5,2,behind,NMR
+Ever Sahdany MARTINEZ RAMOS,Ever Sahdany MARTINEZ RAMOS_plan_100,400.0,monthly,2200.0,27.0,6,behind,BR
+Bhavin Ramanlal Patel,Bhavin Ramanlal Patel_plan_101,500.0,monthly,1587.99,45.2,4,behind,BR
+Edwin PAYES BARRERA,Edwin PAYES BARRERA_plan_102,1000.0,monthly,1000.0,80.0,0,current,NMR
+Yecksibith  Vegas,Yecksibith  Vegas_plan_103,200.0,monthly,1850.0,9.8,3,behind,NMR
+Juliana Eunice Aku BLEWUSI,Juliana Eunice Aku BLEWUSI_plan_104,500.0,monthly,1075.0,74.9,0,current,MS
+Cheickna Hamala KONTE,Cheickna Hamala KONTE_plan_105,300.0,monthly,3250.0,8.5,1,behind,BR
+Eusebio Eduardo MARIN REYES,Eusebio Eduardo MARIN REYES_plan_106,200.0,monthly,5575.0,12.5,0,current,NMR
+Alba Sanchez,Alba Sanchez_plan_107,200.0,monthly,800.0,61.8,0,current,NMR
+Prabhjot Kaur (Amandeep Singh),Prabhjot Kaur (Amandeep Singh)_plan_108,1000.0,monthly,2580.0,44.4,1,behind,NMR
+Auguste Joseph,Auguste Joseph_plan_109,500.0,monthly,1485.0,58.1,3,behind,AN
+Azoti Herve KOSSOU,Azoti Herve KOSSOU_plan_110,200.0,monthly,975.0,47.3,1,behind,BR
+Chintankumar Prabhudas Patel,Chintankumar Prabhudas Patel_plan_111,500.0,monthly,1175.0,72.7,0,current,BR
+Clement Chukwudi OGBALU A201996010,Clement Chukwudi OGBALU A201996010_plan_112,500.0,monthly,500.0,50.0,0,current,BR
+Elange Belizaire,Elange Belizaire_plan_113,200.0,monthly,2270.0,49.6,12,behind,NMR
+Indravadan PATEL,Indravadan PATEL_plan_114,1000.0,monthly,4000.0,33.3,1,behind,NMR
+Jose Elmer LEMUS-GOMEZ,Jose Elmer LEMUS-GOMEZ_plan_115,100.0,monthly,2200.0,26.7,4,behind,NMR
+Jose Luis MARTINEZ CHAVEZ,Jose Luis MARTINEZ CHAVEZ_plan_116,200.0,monthly,2500.0,10.9,4,behind,TSA
+Priscilla Muteu,Priscilla Muteu_plan_117,600.0,monthly,4375.0,41.7,0,current,MS
+Sarah Erigbe,Sarah Erigbe_plan_118,300.0,monthly,1325.0,34.6,5,behind,NMR
+Susan CHONTA MENDOZA,Susan CHONTA MENDOZA_plan_120,500.0,monthly,1850.0,21.3,0,current,BR
+Valdomiro DE ASSIS LOBO,Valdomiro DE ASSIS LOBO_plan_122,300.0,monthly,4000.0,0.0,1,behind,NMR
+ValSource,ValSource_plan_123,300.0,monthly,450.0,70.0,0,current,MS
+Victor Ceja Castillo,Victor Ceja Castillo_plan_124,200.0,monthly,875.0,40.7,0,current,TSA
+Wanderlei Umbelino RIBEIRO,Wanderlei Umbelino RIBEIRO_plan_125,500.0,monthly,500.0,50.0,1,behind,BR
