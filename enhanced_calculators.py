@@ -134,49 +134,74 @@ class EnhancedPaymentCalculator:
         return whole_months(months_behind_decimal)
     
     def _calculate_completion(self, plan: PaymentPlan) -> Tuple[int, Optional[datetime]]:
-        """Calculate completion timeline"""
-        months_remaining = calculate_completion_timeline(
-            plan.total_open, plan.monthly_amount, plan.frequency.value
-        )
+        """Calculate completion timeline - FIXED to show correct math"""
+        if plan.monthly_amount <= 0 or plan.total_open <= 0:
+            return 0, None
+        
+        # Calculate how many payments are needed
+        payments_needed = math.ceil(plan.total_open / plan.monthly_amount)
+        
+        # Convert to months based on frequency
+        frequency_months = normalize_frequency_to_months(plan.frequency.value)
+        
+        # Total months = (number of payments - 1) * frequency + 1
+        # This gives us the month when the LAST payment is made
+        months_remaining = ((payments_needed - 1) * frequency_months) + 1
         
         if months_remaining > 0:
-            projected_completion = get_payment_date_for_month(months_remaining, self.payment_day)
+            # Project completion date to 15th of target month
+            current_date = datetime.now()
+            projected_completion = current_date + relativedelta(months=months_remaining)
+            projected_completion = projected_completion.replace(day=15)
         else:
             projected_completion = None
         
         return months_remaining, projected_completion
     
     def _generate_payment_roadmap(self, plan: PaymentPlan, months_remaining: int) -> List[Dict]:
-        """Generate payment roadmap"""
+        """Generate payment roadmap with correct dates and amounts"""
         roadmap = []
         
-        if plan.monthly_amount <= 0 or months_remaining <= 0:
+        if plan.monthly_amount <= 0 or plan.total_open <= 0:
             return roadmap
         
         current_balance = plan.total_open
         frequency_months = normalize_frequency_to_months(plan.frequency.value)
         payment_number = 1
         max_payments = 60  # Limit to 5 years
+        current_date = datetime.now()
         
-        for month in range(1, months_remaining + 1, frequency_months):
-            if current_balance <= 0 or payment_number > max_payments:
+        # Calculate total payments needed
+        total_payments_needed = math.ceil(plan.total_open / plan.monthly_amount)
+        
+        for payment_num in range(1, min(total_payments_needed + 1, max_payments + 1)):
+            if current_balance <= 0:
                 break
             
-            payment_amount = min(plan.monthly_amount, current_balance)
-            payment_date = get_payment_date_for_month(month, self.payment_day)
+            # Calculate payment date (15th of the target month)
+            months_from_now = (payment_num - 1) * frequency_months
+            payment_date = current_date + relativedelta(months=months_from_now)
+            payment_date = payment_date.replace(day=15)
+            
+            # Calculate payment amount (final payment might be less)
+            if payment_num == total_payments_needed:
+                # Final payment - pay exactly what's remaining
+                payment_amount = current_balance
+            else:
+                payment_amount = min(plan.monthly_amount, current_balance)
             
             roadmap_entry = {
-                'payment_number': payment_number,
+                'payment_number': payment_num,
                 'date': payment_date.strftime('%Y-%m-%d'),
                 'expected_payment': round(payment_amount, 2),
-                'remaining_balance': round(current_balance - payment_amount, 2),
-                'is_overdue': payment_date < datetime.now(),
-                'description': f'Payment {payment_number} - {plan.frequency.value}'
+                'remaining_balance': round(max(0, current_balance - payment_amount), 2),
+                'is_overdue': payment_date < current_date,
+                'description': f'Payment {payment_num} of {total_payments_needed} - {plan.frequency.value}',
+                'is_final_payment': payment_num == total_payments_needed
             }
             
             roadmap.append(roadmap_entry)
             current_balance -= payment_amount
-            payment_number += 1
         
         return roadmap
     

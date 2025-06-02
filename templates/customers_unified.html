@@ -4,11 +4,8 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1><i class="fas fa-users me-3"></i>Customer Payment Tracking & Projections</h1>
+            <h1><i class="fas fa-users me-3"></i>Customer Payment Tracking</h1>
             <div class="d-flex gap-2">
-                <button class="btn btn-info" onclick="toggleProjectionsView()">
-                    <i class="fas fa-chart-line me-2"></i><span id="toggleProjectionsText">Show Projections</span>
-                </button>
                 <button class="btn btn-success" onclick="downloadCustomerData()">
                     <i class="fas fa-download me-2"></i>Export Data
                 </button>
@@ -53,7 +50,7 @@
                             <option value="all">All Classes</option>
                         </select>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Sort By</label>
                         <select class="form-select" id="sortBy" onchange="applyFilters()">
                             <option value="months_behind_desc">Months Behind ↓</option>
@@ -61,15 +58,6 @@
                             <option value="customer_name_asc">Name A-Z</option>
                             <option value="monthly_payment_desc">Monthly Payment ↓</option>
                         </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">View</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="viewMode" id="viewCurrent" value="current" checked>
-                            <label class="btn btn-outline-primary" for="viewCurrent">Current</label>
-                            <input type="radio" class="btn-check" name="viewMode" id="viewProjections" value="projections">
-                            <label class="btn btn-outline-info" for="viewProjections">Projections</label>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -87,57 +75,6 @@
     </div>
 </div>
 
-<!-- Projections Settings (Hidden by default) -->
-<div class="row mb-4" id="projectionsSettings" style="display: none;">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Projection Settings</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <label class="form-label">Time Range</label>
-                        <select class="form-select" id="timeRange" onchange="updateProjections()">
-                            <option value="6">Next 6 Months</option>
-                            <option value="12" selected>Next 12 Months</option>
-                            <option value="24">Next 24 Months</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Scenario</label>
-                        <select class="form-select" id="scenarioSelect" onchange="updateProjections()">
-                            <option value="current">Current Status</option>
-                            <option value="restart">If Restarted Today</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Summary Metrics</label>
-                        <div class="row text-center">
-                            <div class="col-3">
-                                <div class="h6 text-info mb-0" id="totalExpectedMonthly">$0</div>
-                                <small class="text-muted">Expected Monthly</small>
-                            </div>
-                            <div class="col-3">
-                                <div class="h6 text-success mb-0" id="onTrackCustomers">0</div>
-                                <small class="text-muted">On Track</small>
-                            </div>
-                            <div class="col-3">
-                                <div class="h6 text-warning mb-0" id="behindCustomers">0</div>
-                                <small class="text-muted">Behind</small>
-                            </div>
-                            <div class="col-3">
-                                <div class="h6 text-primary mb-0" id="avgCompletionMonths">0</div>
-                                <small class="text-muted">Avg Completion</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Customer Data Table -->
 <div class="row mb-4">
     <div class="col-12">
@@ -146,11 +83,11 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="fas fa-table me-2"></i>
-                        <span id="tableTitle">Customer Payment Details</span>
+                        Customer Payment Status
                     </h5>
                     <div class="d-flex gap-2">
                         <span class="text-muted" id="tableInfo">Loading...</span>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="exportCurrentView()">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadCustomerData()">
                             <i class="fas fa-download me-1"></i>Export View
                         </button>
                     </div>
@@ -201,7 +138,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="exportCustomerDetails()">
+                <button type="button" class="btn btn-primary" onclick="downloadCustomerData()">
                     <i class="fas fa-download me-2"></i>Export Customer Data
                 </button>
             </div>
@@ -214,9 +151,8 @@
 {% block extra_scripts %}
 <script>
     let currentData = [];
-    let currentProjections = [];
+    let allFilteredData = []; // Store all filtered data for summary calculations
     let currentPage = 1;
-    let currentViewMode = 'current';
     const itemsPerPage = 25;
     let currentModalCustomer = null;
 
@@ -232,14 +168,6 @@
         document.getElementById('searchCustomer').addEventListener('input', function() {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(applyFilters, 300);
-        });
-
-        // View mode radio buttons
-        document.querySelectorAll('input[name="viewMode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                currentViewMode = this.value;
-                toggleViewMode();
-            });
         });
     }
 
@@ -260,38 +188,6 @@
         }
     }
 
-    function toggleViewMode() {
-        const projectionsSettings = document.getElementById('projectionsSettings');
-        const tableTitle = document.getElementById('tableTitle');
-        
-        if (currentViewMode === 'projections') {
-            projectionsSettings.style.display = 'block';
-            tableTitle.textContent = 'Customer Payment Projections';
-            loadProjectionsView();
-        } else {
-            projectionsSettings.style.display = 'none';
-            tableTitle.textContent = 'Customer Payment Details';
-            loadCurrentView();
-        }
-    }
-
-    function toggleProjectionsView() {
-        const projectionsRadio = document.getElementById('viewProjections');
-        const currentRadio = document.getElementById('viewCurrent');
-        
-        if (currentViewMode === 'current') {
-            projectionsRadio.checked = true;
-            currentViewMode = 'projections';
-            document.getElementById('toggleProjectionsText').textContent = 'Show Current';
-        } else {
-            currentRadio.checked = true;
-            currentViewMode = 'current';
-            document.getElementById('toggleProjectionsText').textContent = 'Show Projections';
-        }
-        
-        toggleViewMode();
-    }
-
     async function loadCurrentView() {
         showLoading(true);
         try {
@@ -306,61 +202,88 @@
         }
     }
 
-    async function loadProjectionsView() {
-        showLoading(true);
-        try {
-            await loadProjectionData();
-            renderProjectionsTable();
-            updateProjectionsSummary();
-        } catch (error) {
-            console.error('Error loading projections view:', error);
-            showToast('Error loading projections data', 'danger');
-        } finally {
-            showLoading(false);
-        }
-    }
-
     async function loadCustomerData() {
-        const params = new URLSearchParams({
-            class_filter: document.getElementById('classFilter').value,
-            status_filter: document.getElementById('statusFilter').value,
-            search: document.getElementById('searchCustomer').value,
-            sort_by: document.getElementById('sortBy').value,
-            page: currentPage,
-            per_page: itemsPerPage
-        });
-
-        const response = await fetch(`/api/customers/data?${params}`);
-        const data = await response.json();
-        
-        currentData = data.data;
-        updatePagination(data.pagination);
-        updateTableInfo(data.pagination);
-    }
-
-    async function loadProjectionData() {
-        const timeRange = document.getElementById('timeRange').value;
-        const scenario = document.getElementById('scenarioSelect').value;
-        const classFilter = document.getElementById('classFilter').value;
-
-        const params = new URLSearchParams({
-            months: timeRange,
-            scenario: scenario
-        });
-        
-        if (classFilter && classFilter !== 'all') {
-            params.append('class_filter', classFilter);
-        }
-
-        const response = await fetch(`/api/projections/customers?${params}`);
-        currentProjections = await response.json();
-        
-        // Apply search filter
-        const searchTerm = document.getElementById('searchCustomer').value.toLowerCase();
-        if (searchTerm) {
-            currentProjections = currentProjections.filter(proj => 
-                proj.customer_name.toLowerCase().includes(searchTerm)
-            );
+        try {
+            // Load dashboard data and filter it
+            const response = await fetch('/api/results/dashboard');
+            const dashboardData = await response.json();
+            
+            let plans = dashboardData.payment_plan_details || [];
+            
+            // Apply filters
+            const classFilter = document.getElementById('classFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchCustomer').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+            
+            if (classFilter && classFilter !== 'all') {
+                plans = plans.filter(p => p.class_field === classFilter);
+            }
+            
+            if (statusFilter && statusFilter !== 'all') {
+                plans = plans.filter(p => p.status === statusFilter);
+            }
+            
+            if (searchTerm) {
+                plans = plans.filter(p => p.customer_name.toLowerCase().includes(searchTerm));
+            }
+            
+            // Sort data
+            const [sortField, sortDirection] = sortBy.split('_');
+            const reverse = sortDirection === 'desc';
+            
+            plans.sort((a, b) => {
+                let aVal, bVal;
+                switch (sortField) {
+                    case 'months':
+                        aVal = a.months_behind || 0;
+                        bVal = b.months_behind || 0;
+                        break;
+                    case 'total':
+                        aVal = a.total_owed || 0;
+                        bVal = b.total_owed || 0;
+                        break;
+                    case 'customer':
+                        aVal = a.customer_name || '';
+                        bVal = b.customer_name || '';
+                        return reverse ? bVal.localeCompare(aVal) : aVal.localeCompare(bVal);
+                    case 'monthly':
+                        aVal = a.monthly_payment || 0;
+                        bVal = b.monthly_payment || 0;
+                        break;
+                    default:
+                        aVal = a.months_behind || 0;
+                        bVal = b.months_behind || 0;
+                }
+                return reverse ? bVal - aVal : aVal - bVal;
+            });
+            
+            // Store all filtered data for summary calculations
+            allFilteredData = plans;
+            
+            // Paginate for display
+            const totalItems = plans.length;
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            currentData = plans.slice(startIndex, endIndex);
+            
+            // Update pagination info
+            const pagination = {
+                current_page: currentPage,
+                total_pages: Math.ceil(totalItems / itemsPerPage),
+                total_items: totalItems,
+                start_index: startIndex + 1,
+                end_index: Math.min(endIndex, totalItems),
+                has_prev: currentPage > 1,
+                has_next: endIndex < totalItems
+            };
+            
+            updatePagination(pagination);
+            updateTableInfo(pagination);
+            
+        } catch (error) {
+            console.error('Error loading customer data:', error);
+            showToast('Error loading customer data', 'danger');
         }
     }
 
@@ -368,185 +291,274 @@
         const tableHead = document.getElementById('tableHead');
         const tableBody = document.getElementById('tableBody');
         
+        // Separate customers by status
+        const onTimeCustomers = currentData.filter(p => (p.months_behind || 0) === 0);
+        const behindCustomers = currentData.filter(p => (p.months_behind || 0) > 0);
+        
         // Set headers
         tableHead.innerHTML = `
             <tr>
                 <th>Customer</th>
                 <th>Plan ID</th>
-                <th>Monthly Payment</th>
+                <th>Open Balance</th>
+                <th>Payment Terms</th>
                 <th>Frequency</th>
-                <th>Balance</th>
-                <th>% Paid</th>
-                <th>Months Behind</th>
+                <th>Next Payment Date</th>
                 <th>Status</th>
                 <th>Class</th>
                 <th>Actions</th>
             </tr>
         `;
         
-        // Render data
-        tableBody.innerHTML = currentData.map(plan => `
-            <tr class="${getRowClass(plan)}">
-                <td><strong>${plan.customer_name}</strong></td>
-                <td><small class="text-muted">${plan.plan_id}</small></td>
-                <td><strong>${formatCurrency(plan.monthly_payment || 0)}</strong></td>
-                <td><span class="badge bg-info">${plan.frequency || 'monthly'}</span></td>
-                <td><strong class="text-success">${formatCurrency(plan.total_owed || 0)}</strong></td>
-                <td>
-                    <div class="progress" style="height: 15px;">
-                        <div class="progress-bar bg-success" style="width: ${plan.percent_paid || 0}%"></div>
-                    </div>
-                    <small>${(plan.percent_paid || 0).toFixed(1)}%</small>
-                </td>
-                <td>
-                    <span class="${(plan.months_behind || 0) > 0 ? 'text-danger fw-bold' : 'text-muted'}">
-                        ${(plan.months_behind || 0).toFixed(1)}
-                    </span>
-                </td>
-                <td>${getStatusBadge(plan.status, plan.months_behind)}</td>
-                <td>
-                    ${plan.class_field ? `<span class="badge bg-secondary">${plan.class_field}</span>` : '<span class="text-muted">-</span>'}
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="showCustomerDetails('${plan.customer_name}')">
-                        <i class="fas fa-eye"></i> Details
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function renderProjectionsTable() {
-        const tableHead = document.getElementById('tableHead');
-        const tableBody = document.getElementById('tableBody');
+        let html = '';
         
-        // Set headers for projections
-        tableHead.innerHTML = `
-            <tr>
-                <th>Customer</th>
-                <th>Status</th>
-                <th>Monthly Payment</th>
-                <th>Total Owed</th>
-                <th>Plans</th>
-                <th>Completion</th>
-                <th>Next 6 Payments</th>
-                <th>Actions</th>
-            </tr>
-        `;
-        
-        // Sort projections by priority
-        const sortedProjections = currentProjections.sort((a, b) => {
-            if (a.renegotiation_needed !== b.renegotiation_needed) {
-                return a.renegotiation_needed ? -1 : 1;
-            }
-            return b.total_monthly_payment - a.total_monthly_payment;
-        });
-        
-        // Render projections data
-        tableBody.innerHTML = sortedProjections.map(proj => {
-            const statusInfo = getProjectionStatusInfo(proj);
-            const nextPayments = getNextPaymentsBadges(proj.timeline);
-            
-            return `
-                <tr class="${statusInfo.rowClass}">
-                    <td>
-                        <strong>${proj.customer_name}</strong>
-                        <br><small class="text-muted">${proj.plan_count} plan${proj.plan_count > 1 ? 's' : ''}</small>
-                    </td>
-                    <td>${statusInfo.badge}</td>
-                    <td>
-                        <strong class="text-success">${formatCurrency(proj.total_monthly_payment)}</strong>
-                        <br><small class="text-muted">per payment</small>
-                    </td>
-                    <td><strong>${formatCurrency(proj.total_owed)}</strong></td>
-                    <td><span class="badge bg-info">${proj.plan_count}</span></td>
-                    <td>
-                        <span class="badge ${getCompletionBadgeClass(proj.completion_month)}">
-                            ${proj.completion_month > 0 ? `${proj.completion_month} months` : 'Contact needed'}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-wrap gap-1">
-                            ${nextPayments}
-                        </div>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="showCustomerDetails('${proj.customer_name}')">
-                            <i class="fas fa-eye"></i> Details
-                        </button>
-                        ${proj.renegotiation_needed ? 
-                            `<br><button class="btn btn-sm btn-warning mt-1" onclick="exportProjection('${proj.customer_name}')">
-                                <i class="fas fa-download"></i> Export
-                            </button>` : ''}
+        // On-time customers section
+        if (onTimeCustomers.length > 0) {
+            html += `
+                <tr class="table-success">
+                    <td colspan="9" class="fw-bold text-center">
+                        <i class="fas fa-check-circle me-2"></i>
+                        CUSTOMERS ON TRACK - Being Tracked
                     </td>
                 </tr>
             `;
-        }).join('');
-    }
-
-    function getRowClass(plan) {
-        const monthsBehind = plan.months_behind || 0;
-        if (monthsBehind >= 3) return 'table-danger';
-        if (monthsBehind > 0) return 'table-warning';
-        return '';
-    }
-
-    function getStatusBadge(status, monthsBehind) {
-        const months = monthsBehind || 0;
+            
+            onTimeCustomers.forEach(plan => {
+                const nextPaymentDate = calculateNextPaymentDate(plan);
+                html += `
+                    <tr class="table-light">
+                        <td><strong>${plan.customer_name}</strong></td>
+                        <td><small class="text-muted">${plan.plan_id}</small></td>
+                        <td><strong class="text-success">${formatCurrency(plan.total_owed || 0)}</strong></td>
+                        <td><span class="text-info">${formatCurrency(plan.monthly_payment || 0)}</span></td>
+                        <td><span class="badge bg-info">${plan.frequency || 'monthly'}</span></td>
+                        <td><strong class="text-primary">${nextPaymentDate}</strong></td>
+                        <td><span class="badge bg-success">On Track</span></td>
+                        <td>
+                            ${plan.class_field ? `<span class="badge bg-secondary">${plan.class_field}</span>` : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="showPaymentSchedule('${plan.customer_name}', '${plan.plan_id}')">
+                                <i class="fas fa-calendar"></i> Schedule
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
         
-        if (months >= 6) {
-            return '<span class="badge bg-danger">Critical</span>';
-        } else if (months >= 3) {
-            return '<span class="badge bg-warning">Severe</span>';
-        } else if (months > 0) {
-            return '<span class="badge bg-warning">Behind</span>';
-        } else if (status === 'completed') {
-            return '<span class="badge bg-info">Completed</span>';
-        } else {
-            return '<span class="badge bg-success">Current</span>';
+        // Behind customers section
+        if (behindCustomers.length > 0) {
+            html += `
+                <tr class="table-warning">
+                    <td colspan="9" class="fw-bold text-center">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        CUSTOMERS BEHIND - Need Decisions/Contact
+                    </td>
+                </tr>
+            `;
+            
+            behindCustomers.forEach(plan => {
+                const monthsBehind = plan.months_behind || 0;
+                const severity = monthsBehind >= 6 ? 'danger' : monthsBehind >= 3 ? 'warning' : 'info';
+                const actionText = monthsBehind >= 6 ? 'URGENT CONTACT' : 
+                                 monthsBehind >= 3 ? 'CONTACT NEEDED' : 'FOLLOW UP';
+                
+                html += `
+                    <tr class="table-${severity}">
+                        <td>
+                            <strong>${plan.customer_name}</strong>
+                            <br><small class="text-danger">${monthsBehind.toFixed(1)} months behind</small>
+                        </td>
+                        <td><small class="text-muted">${plan.plan_id}</small></td>
+                        <td><strong class="text-danger">${formatCurrency(plan.total_owed || 0)}</strong></td>
+                        <td><span class="text-muted">${formatCurrency(plan.monthly_payment || 0)}</span></td>
+                        <td><span class="badge bg-secondary">${plan.frequency || 'monthly'}</span></td>
+                        <td><span class="text-danger">BEHIND</span></td>
+                        <td>${getStatusBadge(plan.status, plan.months_behind)}</td>
+                        <td>
+                            ${plan.class_field ? `<span class="badge bg-secondary">${plan.class_field}</span>` : '<span class="text-muted">-</span>'}
+                        </td>
+                        <td>
+                            <span class="badge bg-${severity} text-uppercase small fw-bold">
+                                ${actionText}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        
+        // Empty state
+        if (currentData.length === 0) {
+            html = `
+                <tr>
+                    <td colspan="9" class="text-center py-4">
+                        <div class="text-muted">
+                            <i class="fas fa-search fa-2x mb-2"></i>
+                            <br>No customers found matching your criteria
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        tableBody.innerHTML = html;
+    }
+
+    function calculateNextPaymentDate(plan) {
+        const frequency = plan.frequency || 'monthly';
+        const today = new Date();
+        let nextPayment = new Date(today.getFullYear(), today.getMonth(), 15); // 15th of current month
+        
+        // If we're past the 15th, move to next payment period
+        if (today.getDate() > 15) {
+            if (frequency === 'monthly') {
+                nextPayment.setMonth(nextPayment.getMonth() + 1);
+            } else if (frequency === 'quarterly') {
+                nextPayment.setMonth(nextPayment.getMonth() + 3);
+            } else if (frequency === 'bimonthly') {
+                nextPayment.setMonth(nextPayment.getMonth() + 2);
+            }
+        }
+        
+        return nextPayment.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+    }
+
+    async function showPaymentSchedule(customerName, planId) {
+        try {
+            const response = await fetch(`/api/customers/${encodeURIComponent(customerName)}`);
+            const customerDetails = await response.json();
+            
+            // Find the specific plan
+            const plan = customerDetails.payment_plans.find(p => p.plan_id === planId);
+            if (!plan) {
+                showToast('Plan not found', 'danger');
+                return;
+            }
+            
+            // Calculate payment schedule
+            const schedule = generatePaymentSchedule(plan);
+            
+            currentModalCustomer = customerName;
+            document.getElementById('modalCustomerName').textContent = `${customerName} - Payment Schedule`;
+            
+            const content = document.getElementById('customerDetailContent');
+            content.innerHTML = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6>Plan Details</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Plan ID:</strong> ${plan.plan_id}</li>
+                            <li><strong>Open Balance:</strong> <span class="text-success fw-bold">${formatCurrency(plan.total_open)}</span></li>
+                            <li><strong>Payment Amount:</strong> <span class="text-primary fw-bold">${formatCurrency(plan.monthly_amount)}</span></li>
+                            <li><strong>Frequency:</strong> <span class="badge bg-info">${plan.frequency}</span></li>
+                            <li><strong>Class:</strong> ${plan.class_filter || 'None'}</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Schedule Summary</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Total Payments Needed:</strong> ${schedule.totalPayments}</li>
+                            <li><strong>Estimated Completion:</strong> ${schedule.completionDate}</li>
+                            <li><strong>Total Amount:</strong> ${formatCurrency(schedule.totalAmount)}</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h6>Payment Schedule (Next 12 Payments)</h6>
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-sm table-striped">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th>Payment #</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Remaining Balance</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${schedule.payments.map(payment => `
+                                <tr class="${payment.isPastDue ? 'table-warning' : payment.isCompleted ? 'table-success' : ''}">
+                                    <td><strong>${payment.paymentNumber}</strong></td>
+                                    <td>${payment.date}</td>
+                                    <td class="text-success fw-bold">${formatCurrency(payment.amount)}</td>
+                                    <td class="text-primary">${formatCurrency(payment.remainingBalance)}</td>
+                                    <td>
+                                        ${payment.isPastDue ? '<span class="badge bg-warning">Past Due</span>' : 
+                                          payment.isCompleted ? '<span class="badge bg-success">Completed</span>' : 
+                                          '<span class="badge bg-info">Scheduled</span>'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
+            modal.show();
+            
+        } catch (error) {
+            console.error('Error loading payment schedule:', error);
+            showToast('Error loading payment schedule', 'danger');
         }
     }
 
-    function getProjectionStatusInfo(proj) {
-        if (proj.renegotiation_needed) {
-            return {
-                badge: `<span class="badge bg-danger">Needs Contact</span><br><small class="text-muted">${proj.months_behind} months behind</small>`,
-                rowClass: 'table-danger'
-            };
-        } else if (proj.status === 'behind') {
-            return {
-                badge: `<span class="badge bg-warning">Behind</span><br><small class="text-muted">${proj.months_behind} months</small>`,
-                rowClass: 'table-warning'
-            };
-        } else if (proj.status === 'restart') {
-            return {
-                badge: '<span class="badge bg-info">Restart Scenario</span>',
-                rowClass: ''
-            };
-        } else {
-            return {
-                badge: '<span class="badge bg-success">Current</span>',
-                rowClass: ''
-            };
-        }
-    }
-
-    function getCompletionBadgeClass(completionMonth) {
-        if (completionMonth <= 0) return 'bg-danger';
-        if (completionMonth <= 12) return 'bg-success';
-        if (completionMonth <= 24) return 'bg-warning';
-        return 'bg-info';
-    }
-
-    function getNextPaymentsBadges(timeline) {
-        const paymentMonths = timeline
-            .filter(month => month.monthly_payment > 0)
-            .slice(0, 6)
-            .map(month => 
-                `<span class="badge bg-success me-1" title="Month ${month.month}: ${formatCurrency(month.monthly_payment)}">${month.month}</span>`
-            );
+    function generatePaymentSchedule(plan) {
+        const openBalance = plan.total_open || 0;
+        const monthlyAmount = plan.monthly_amount || 0;
+        const frequency = plan.frequency || 'monthly';
         
-        return paymentMonths.length > 0 ? paymentMonths.join('') : '<span class="text-muted">Contact needed</span>';
+        if (monthlyAmount <= 0 || openBalance <= 0) {
+            return { payments: [], totalPayments: 0, completionDate: 'N/A', totalAmount: 0 };
+        }
+        
+        const totalPayments = Math.ceil(openBalance / monthlyAmount);
+        const frequencyMonths = frequency === 'quarterly' ? 3 : frequency === 'bimonthly' ? 2 : 1;
+        
+        const payments = [];
+        let currentBalance = openBalance;
+        const today = new Date();
+        
+        for (let i = 1; i <= Math.min(totalPayments, 12); i++) {
+            const paymentDate = new Date(today.getFullYear(), today.getMonth() + ((i - 1) * frequencyMonths), 15);
+            const paymentAmount = Math.min(monthlyAmount, currentBalance);
+            
+            payments.push({
+                paymentNumber: i,
+                date: paymentDate.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                }),
+                amount: paymentAmount,
+                remainingBalance: Math.max(0, currentBalance - paymentAmount),
+                isPastDue: paymentDate < today,
+                isCompleted: false
+            });
+            
+            currentBalance -= paymentAmount;
+            if (currentBalance <= 0) break;
+        }
+        
+        const completionMonths = (totalPayments - 1) * frequencyMonths;
+        const completionDate = new Date(today.getFullYear(), today.getMonth() + completionMonths, 15);
+        
+        return {
+            payments,
+            totalPayments,
+            completionDate: completionDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long' 
+            }),
+            totalAmount: totalPayments * monthlyAmount
+        };
     }
 
     async function showCustomerDetails(customerName) {
@@ -554,76 +566,130 @@
             const response = await fetch(`/api/customers/${encodeURIComponent(customerName)}`);
             const customerDetails = await response.json();
             
+            // Check if customer is behind
+            const isBehind = customerDetails.metrics.some(m => (m.months_behind || 0) > 0);
+            
             currentModalCustomer = customerName;
             document.getElementById('modalCustomerName').textContent = customerName;
             
             const content = document.getElementById('customerDetailContent');
-            content.innerHTML = `
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>Customer Information</h6>
-                        <ul class="list-unstyled">
-                            <li><strong>Total Plans:</strong> ${customerDetails.customer_info.total_plans}</li>
-                            <li><strong>Total Open Balance:</strong> ${formatCurrency(customerDetails.customer_info.total_open_balance)}</li>
-                            <li><strong>Classes:</strong> ${customerDetails.customer_info.all_classes.join(', ') || 'None'}</li>
-                            <li><strong>Multiple Plans:</strong> ${customerDetails.customer_info.has_multiple_plans ? 'Yes' : 'No'}</li>
-                        </ul>
+            
+            if (isBehind) {
+                // Show contact/decision interface for behind customers
+                const totalMonthsBehind = Math.max(...customerDetails.metrics.map(m => m.months_behind || 0));
+                const totalOwed = customerDetails.customer_info.total_open_balance;
+                
+                content.innerHTML = `
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Customer Requires Contact</h5>
+                        <p>This customer is <strong>${totalMonthsBehind.toFixed(1)} months behind</strong> with <strong>${formatCurrency(totalOwed)}</strong> outstanding.</p>
                     </div>
-                    <div class="col-md-6">
-                        <h6>Payment Plans</h6>
-                        ${customerDetails.payment_plans.map(plan => `
-                            <div class="card mb-2 ${plan.has_issues ? 'border-danger' : 'border-success'}">
-                                <div class="card-body p-2">
-                                    <div class="d-flex justify-content-between">
-                                        <div>
-                                            <strong>${plan.plan_id}</strong><br>
-                                            <small>${formatCurrency(plan.monthly_amount)} ${plan.frequency}</small>
-                                        </div>
-                                        <div class="text-end">
-                                            <strong>${formatCurrency(plan.total_open)}</strong><br>
-                                            <small class="${plan.has_issues ? 'text-danger' : 'text-success'}">
-                                                ${plan.has_issues ? 'Has Issues' : 'Clean'}
-                                            </small>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Customer Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Total Plans:</strong> ${customerDetails.customer_info.total_plans}</li>
+                                <li><strong>Total Open Balance:</strong> <span class="text-danger fw-bold">${formatCurrency(customerDetails.customer_info.total_open_balance)}</span></li>
+                                <li><strong>Classes:</strong> ${customerDetails.customer_info.all_classes.join(', ') || 'None'}</li>
+                                <li><strong>Months Behind:</strong> <span class="text-danger fw-bold">${totalMonthsBehind.toFixed(1)}</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Required Actions</h6>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-warning">
+                                    <i class="fas fa-phone me-2"></i>Contact Customer
+                                </button>
+                                <button class="btn btn-info">
+                                    <i class="fas fa-handshake me-2"></i>Renegotiate Terms
+                                </button>
+                                <button class="btn btn-secondary">
+                                    <i class="fas fa-file-alt me-2"></i>Document Contact
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Payment Plan Status</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Plan</th>
+                                            <th>Open Balance</th>
+                                            <th>Payment Terms</th>
+                                            <th>Months Behind</th>
+                                            <th>Action Needed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${customerDetails.payment_plans.map(plan => {
+                                            const metric = customerDetails.metrics.find(m => m.plan_id === plan.plan_id);
+                                            const monthsBehind = metric ? metric.months_behind || 0 : 0;
+                                            return `
+                                                <tr class="${monthsBehind > 0 ? 'table-warning' : ''}">
+                                                    <td>${plan.plan_id}</td>
+                                                    <td class="text-danger fw-bold">${formatCurrency(plan.total_open)}</td>
+                                                    <td>${formatCurrency(plan.monthly_amount)} ${plan.frequency}</td>
+                                                    <td class="text-danger fw-bold">${monthsBehind.toFixed(1)}</td>
+                                                    <td>
+                                                        ${monthsBehind >= 6 ? '<span class="badge bg-danger">Immediate Contact</span>' :
+                                                          monthsBehind >= 3 ? '<span class="badge bg-warning">Contact Soon</span>' :
+                                                          monthsBehind > 0 ? '<span class="badge bg-info">Follow Up</span>' :
+                                                          '<span class="badge bg-success">On Track</span>'}
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Show normal customer information for on-track customers
+                content.innerHTML = `
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle me-2"></i>Customer On Track</h5>
+                        <p>This customer is current with their payment plan.</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Customer Information</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Total Plans:</strong> ${customerDetails.customer_info.total_plans}</li>
+                                <li><strong>Total Open Balance:</strong> <span class="text-success fw-bold">${formatCurrency(customerDetails.customer_info.total_open_balance)}</span></li>
+                                <li><strong>Classes:</strong> ${customerDetails.customer_info.all_classes.join(', ') || 'None'}</li>
+                                <li><strong>Status:</strong> <span class="badge bg-success">Current</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Payment Plans</h6>
+                            ${customerDetails.payment_plans.map(plan => `
+                                <div class="card mb-2 border-success">
+                                    <div class="card-body p-2">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong>${plan.plan_id}</strong><br>
+                                                <small>${formatCurrency(plan.monthly_amount)} ${plan.frequency}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <strong class="text-success">${formatCurrency(plan.total_open)}</strong><br>
+                                                <small class="text-success">On Track</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-                
-                ${customerDetails.metrics.length > 0 ? `
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <h6>Payment Metrics</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Plan</th>
-                                        <th>Status</th>
-                                        <th>% Paid</th>
-                                        <th>Months Behind</th>
-                                        <th>Projected Completion</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${customerDetails.metrics.map(metric => `
-                                        <tr>
-                                            <td>${metric.plan_id}</td>
-                                            <td><span class="badge bg-${metric.status === 'current' ? 'success' : metric.status === 'behind' ? 'danger' : 'info'}">${metric.status}</span></td>
-                                            <td>${metric.percent_paid}%</td>
-                                            <td>${metric.months_behind}</td>
-                                            <td>${metric.projected_completion || 'N/A'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                            `).join('')}
                         </div>
                     </div>
-                </div>
-                ` : ''}
-            `;
+                `;
+            }
             
             const modal = new bootstrap.Modal(document.getElementById('customerDetailModal'));
             modal.show();
@@ -637,56 +703,65 @@
     function updateSummary() {
         const container = document.getElementById('customerSummary');
         
-        if (!currentData.length) {
+        if (!allFilteredData.length) {
             container.innerHTML = '<div class="alert alert-info">No data available</div>';
             return;
         }
         
-        const totalPlans = currentData.length;
-        const behindPlans = currentData.filter(p => (p.months_behind || 0) > 0).length;
-        const avgMonthlyPayment = currentData.reduce((sum, p) => sum + (p.monthly_payment || 0), 0) / totalPlans;
+        // Use ALL filtered data for summary, not just current page
+        const onTrackCustomers = allFilteredData.filter(p => (p.months_behind || 0) === 0);
+        const behindCustomers = allFilteredData.filter(p => (p.months_behind || 0) > 0);
+        
+        const totalMonthly = allFilteredData.reduce((sum, p) => sum + (p.monthly_payment || 0), 0);
+        const totalOwed = allFilteredData.reduce((sum, p) => sum + (p.total_owed || 0), 0);
         
         container.innerHTML = `
-            <div class="row text-center">
+            <div class="row text-center mb-3">
                 <div class="col-6">
-                    <div class="h4 text-primary">${totalPlans}</div>
-                    <div class="small text-muted">Total Plans</div>
+                    <div class="h4 text-success">${onTrackCustomers.length}</div>
+                    <div class="small text-muted">On Track</div>
                 </div>
                 <div class="col-6">
-                    <div class="h4 text-danger">${behindPlans}</div>
-                    <div class="small text-muted">Behind</div>
+                    <div class="h4 text-danger">${behindCustomers.length}</div>
+                    <div class="small text-muted">Need Contact</div>
                 </div>
             </div>
             <hr>
-            <div class="text-center">
-                <div class="h5 text-info">${formatCurrency(avgMonthlyPayment)}</div>
-                <div class="small text-muted">Avg Monthly</div>
+            <div class="row text-center">
+                <div class="col-12">
+                    <div class="h5 text-info">${formatCurrency(totalOwed)}</div>
+                    <div class="small text-muted">Total Outstanding</div>
+                </div>
+            </div>
+            <div class="mt-2 text-center">
+                <div class="small text-success">${formatCurrency(totalMonthly)} monthly expected</div>
             </div>
         `;
     }
 
-    async function updateProjectionsSummary() {
-        try {
-            const timeRange = document.getElementById('timeRange').value;
-            const scenario = document.getElementById('scenarioSelect').value;
-            
-            const response = await fetch(`/api/projections/portfolio?months=${timeRange}&scenario=${scenario}`);
-            const portfolioData = await response.json();
-            
-            document.getElementById('totalExpectedMonthly').textContent = formatCurrency(portfolioData.summary.average_monthly);
-            document.getElementById('onTrackCustomers').textContent = portfolioData.summary.current_customers;
-            document.getElementById('behindCustomers').textContent = portfolioData.summary.behind_customers;
-            
-            // Calculate average completion
-            const avgCompletion = Math.ceil(
-                currentProjections.reduce((sum, p) => sum + (p.completion_month || 0), 0) / 
-                (currentProjections.length || 1)
-            );
-            document.getElementById('avgCompletionMonths').textContent = avgCompletion;
-            
-        } catch (error) {
-            console.error('Error updating projections summary:', error);
-        }
+    function changePage(page) {
+        currentPage = page;
+        loadCurrentView();
+    }
+
+    function applyFilters() {
+        currentPage = 1;
+        loadCurrentView();
+    }
+
+    function clearSearch() {
+        document.getElementById('searchCustomer').value = '';
+        applyFilters();
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
+    }
+
+    async function refreshData() {
+        showToast('Refreshing data...', 'info');
+        await loadCurrentView();
+        showToast('Data refreshed', 'success');
     }
 
     function updatePagination(pagination) {
@@ -729,39 +804,20 @@
             `Showing ${pagination.start_index || 1}-${pagination.end_index || 0} of ${pagination.total_items || 0}`;
     }
 
-    function changePage(page) {
-        currentPage = page;
-        loadCurrentView();
-    }
-
-    function applyFilters() {
-        currentPage = 1;
-        loadCurrentView();
-    }
-
-    function clearSearch() {
-        document.getElementById('searchCustomer').value = '';
-        applyFilters();
-    }
-
-    async function updateProjections() {
-        if (currentViewMode === 'projections') {
-            await loadProjectionsView();
-        }
-    }
-
-    function showLoading(show) {
-        document.getElementById('loadingIndicator').style.display = show ? 'block' : 'none';
-    }
-
-    async function refreshData() {
-        showToast('Refreshing data...', 'info');
-        if (currentViewMode === 'current') {
-            await loadCurrentView();
+    function getStatusBadge(status, monthsBehind) {
+        const months = monthsBehind || 0;
+        
+        if (months >= 6) {
+            return '<span class="badge bg-danger">Critical</span>';
+        } else if (months >= 3) {
+            return '<span class="badge bg-warning">Severe</span>';
+        } else if (months > 0) {
+            return '<span class="badge bg-warning">Behind</span>';
+        } else if (status === 'completed') {
+            return '<span class="badge bg-info">Completed</span>';
         } else {
-            await loadProjectionsView();
+            return '<span class="badge bg-success">Current</span>';
         }
-        showToast('Data refreshed', 'success');
     }
 
     async function downloadCustomerData() {
@@ -782,60 +838,6 @@
         } catch (error) {
             console.error('Export error:', error);
             showToast('Error exporting data', 'danger');
-        }
-    }
-
-    async function exportProjection(customerName) {
-        try {
-            const timeRange = document.getElementById('timeRange').value;
-            const scenario = document.getElementById('scenarioSelect').value;
-            
-            const response = await fetch(`/api/download/customer-projection/${encodeURIComponent(customerName)}?months=${timeRange}&scenario=${scenario}`);
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${customerName.replace(/\s+/g, '_')}_projection.csv`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-                showToast('Projection exported successfully', 'success');
-            } else {
-                throw new Error('Export failed');
-            }
-        } catch (error) {
-            console.error('Export error:', error);
-            showToast('Error exporting projection', 'danger');
-        }
-    }
-
-    function exportCurrentView() {
-        if (currentViewMode === 'current') {
-            downloadCustomerData();
-        } else {
-            // Export collections CSV for projections view
-            fetch('/api/download/collections-csv')
-                .then(response => response.blob())
-                .then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'customer_projections.csv';
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    showToast('Projections exported successfully', 'success');
-                })
-                .catch(error => {
-                    console.error('Export error:', error);
-                    showToast('Error exporting projections', 'danger');
-                });
-        }
-    }
-
-    function exportCustomerDetails() {
-        if (currentModalCustomer) {
-            // Export specific customer projection
-            exportProjection(currentModalCustomer);
         }
     }
 
